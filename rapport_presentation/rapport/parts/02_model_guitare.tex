@@ -1,0 +1,154 @@
+\section{Choix du model pour la musique et la guitare}
+
+\subsection{Modèle pour les accords}
+
+Nous devons dans un premier temps modéliser l'écriture des accords.
+
+\begin{defi}[Note de musique]
+  Une note de musique permet de décrire la hauteur et la durée d'un son. Cependant en
+  fonction du tempérament de la gamme utilisée, les fréquences changent.
+  Par soucis de généralités, on va utiliser la convention MIDI \cite{bMIDI} 
+  pour numéroter les notes.\\
+  Soit :
+  \begin{itemize}
+    \item Le do au centre du piano (do3) est numéroté par 60.
+    \item On numérote relativement à do3 les autres notes en ajoutant/retirant 1 par
+      demi ton.
+  \end{itemize}
+\end{defi}
+
+\begin{defi}[Accord]
+  Un accord est un ensemble de notes.
+  Un accord est donné par sa fondamentale (note de base pour la construction),
+  et de notes souvent la tierce, la quinte, parfois les septièmes, neufièmes et
+  treizièmes. Ainsi que la manière de positionner ces notes.\\
+  Il existe pour cela différentes manières de noter les accords.
+\end{defi}
+
+\begin{defi}[Notation Américaine]
+  On donne la fondamentale avec une lettre $[A\rightarrow G]$ allant de La
+  à Sol que l'on peut coupler avec une altération \musFlat{}, \musSharp{}.\\
+  On ajoute une indication sur la tierce \texttt{m} pour mineur et \texttt{M}
+  pour majeur, on peut aussi indiquer \texttt{sus2} (resp. \texttt{sus4}) dans
+  le cas où l'on joue la seconde (resp. la quarte) à la place de la tierce.\\
+  On ajoute une indication pour savoir si la septième est présente avec
+  \texttt{7}, de même pour la neuvième et la treizième.\\
+  Il y a des cas exeptionels :
+  \begin{itemize}
+    \item Accord diminué \texttt{dim}
+    \item Accord avec la sixte \texttt{6}
+    \item Accord avec la neuvième sans la septième \texttt{add9}
+    \item Accord de dominante \texttt{7}
+  \end{itemize}
+  Cette notation est presque identifiable à une grammaire :
+  $$Acc := \left[A\rightarrow
+  G\right]+\left[\musFlat{}|\musSharp{}|\varepsilon\right]+\left[m|M|sus2|sus4|\varepsilon\right]+\left[5-|5+|\varepsilon\right]+\left[6|\varepsilon\right]+\left[7m|7M|\varepsilon\right]+\left[9|\varepsilon\right]+\left[11|\varepsilon\right]+\left[13|\varepsilon\right]$$
+\end{defi}
+
+
+
+\begin{defi}[Choix de la notation]
+  Nous décidons d'opter pour une notation de l'accord comme suit :
+  \begin{itemize}
+    \item Un nombre pour la note de construction de l'accord
+    \item Une suite de nombre corrsepondant au décalage en demi tons à la
+      première note.
+  \end{itemize}
+  Alors l'accord de do majeur pourra s'écrire ainsi :
+  $$(60, 0, 4, 7)$$
+\end{defi}
+
+\begin{rema}
+  Les intérêts d'une telle notation :
+  \begin{itemize}
+    \item Très simple d'utilisation
+    \item On peut convertir les différents systèmes de chiffrages à celui-ci.
+    \item Les autres chiffrages ne correspondent pas à des grammaires précises.
+  \end{itemize}
+  Il y a cependant des inconvenients :
+  \begin{itemize}
+    \item On ne peut pas différencier les positions dans l'accord (ce que l'on
+      peut faire avec la notation américaine)
+    \item Ainsi si l'on shouaite éliminer des notes (comme la fondamentale et/ou
+      la quinte, intéréssant si la guitare n'est pas le seul instrument) on ne
+      peut pas le faire aisément.\\
+      Exemple : \texttt{C13} :
+      $$(60, 0, 4, 7, 10, 14, 17) \textbf{ ou } (60, 0, 2, 4, 5, 7, 10)$$
+      quelle note est la quinte ?
+  \end{itemize}
+
+  Nous avons donc ici un problème qui pourra resortir au moment où l'on se
+  demandera comment faire pour éliminer judicieusement les notes dans un
+  accord.
+\end{rema}
+
+
+
+\subsection{Modélisation de la guitare}
+
+On définit une guitare par :
+\begin{itemize}
+  \item \texttt{nc} : nombre de cordes (int)
+  \item \texttt{nf} : nombre de frêtes (int)
+  \item \texttt{sc} : scordature de la guitare (vector[ ])
+\end{itemize}
+
+On définit un guitariste par :
+\begin{itemize}
+  \item \texttt{nfmi} : la taille de la main en le nombre de frêtes accessibles
+    depuis le haut du manche (int)
+	\item \texttt{nbdo} : le nombre de doigts utilisés pour jouer (int)
+	\item \texttt{isba} : s'il est possible de réaliser un barré (bool)
+  \item \texttt{ba} : le nombre de frêtes accessible avec un barré (-1 si barré
+    impossible, 0 si barré et c'est tout, sinon on peut appuyer à d'autres
+    endroits)  (int)
+  \item \texttt{po} : le nombre de cordes bloquables avec le pouce (0 pouce
+    inutilisé, 1 ou 2 nb cordes) équivaut à un petit barré (int)
+\end{itemize}
+
+\section{Le model de contraintes}
+
+On définit les variables indéterminées 
+$$D_1,D_2,D_3,D_4,D_5\in\left\{\left\{1, \dots, nf\right\}\times
+\left\{1, \dots,6\right\}\right\}\cup\left\{\varepsilon\right\}$$
+qui décrivent la position des doigts sur le manche.
+
+Cependant il y a de nombreuses solutions à éliminer comme avoir plusieurs
+doigts sur une même corde.
+Plus généralement, l'espace des solutions potentielles est très vaste. Et l'on
+a trouver une modélisation qui est plus simple à utiliser avec un plus petit
+espace de solutions.
+
+\subsection{Un second model de contraintes}
+
+On définit les variables indéterminées $\left\{F_i\right\}_{1\leq i\leq nc}$ de
+domaine $\left\{-1, 0, 1, \dots, nf\right\}$, on ne représente ici que
+l'endroit où chaque corde est appuyée et non les doigts du guitarise.\\
+-1 : corde non jouée, 0 : corde à vide, reste : numéro de la frête utilisée.
+
+Premièrement, il faut s'assurer que l'on joue exactement les notes de l'accord, soit que :
+$$\left\{\text{Notes jouées}\right\} \subset \left\{\text{Notes de
+l'accord}\right\}$$
+
+Il faut définir une écart entre les doigts de la sorte :
+$$ecart = f(\max_n F_n, \min_n F_n)$$
+
+Première contrainte :\\
+Il faut que les notes jouées soient incluses dans l'accord, ie :
+\begin{equation}
+\forall i\in \llbracket1,nc\rrbracket\exists j\geq 1, (sc[i]+F_i)-(accord[0]+accord[j])
+= 0(mod 12)
+\end{equation}
+Il faut que les notes de l'accord soient incluses dans les notes jouées, ie :
+\begin{equation}
+\forall i\in \llbracket1,na\rrbracket\exists j\geq 1, (sc[j]+F_j)-(accord[0]+accord[i])
+= 0(mod 12)
+\end{equation}
+Il faut que les notes de l'accord soient incluses dans les notes jouées, ie :
+cest contraintes nous assurent que l'on joue toutes les notes de l'accord (il
+faudra par la suite modifier la deuxième contrainte.
+
+Deuxième contrainte :\\
+Il ne faut pas que l'écart soit trop important, et ce fixé par rapport
+à \texttt{tm}.
+

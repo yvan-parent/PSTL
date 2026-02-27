@@ -1,0 +1,82 @@
+\documentclass{template/classeENS}
+%\usepackage[a4paper, total={6.5in, 9in}]{geometry}
+
+\input{bib_pkg/pkg}
+\input{bib_pkg/commandes}
+
+%\title{%
+%	Jouabilité de partition pour guitaristes\\
+%	\large Encadré par Charlotte Truchet et \\
+%	Charles Prud'homme à l'IRCAM}
+%\author{Robinson Langlois}
+%\date{Juin-Juillet 2025}
+
+%\begin{document}
+
+%\maketitle
+
+%\newpage
+
+%\tableofcontents
+
+
+\begin{document}
+
+\titre{Jouabilité de suite d'accords\par pour guitaristes} %Titre du fichier
+\departement{L3 - Informatique} 
+\matiere{2 juin - 11 juillet 2025} 
+\motif{Stage}
+
+\encadrants{Charlotte \textsc{Truchet} \par Charles \textsc{Prud'homme}} %Nom de l'enseignant
+%\enseignant{Charles \textsc{Prud'homme}} %Nom de l'enseignant
+%\tuteurpcp{}
+\etudiant{Robinson \textsc{Langlois}} %Nom des élèves
+
+%----------- Initialisation -------------------
+
+
+\pagenumbering{roman}
+
+\fairemarges %Afficher les marges
+\fairepagedegarde %Créer la page de garde
+
+%\input{parts/remerciments}
+\newpage
+
+\tabledematieres %Créer la table de matières
+%\tabledefigure
+
+\newpage
+
+\pagenumbering{arabic}
+
+\input{parts/introduction}
+\input{parts/preliminaires}
+\input{parts/premierModel}
+\input{parts/secondModel}
+\input{parts/etatDeLArt}
+
+
+%\input{parts/resultats.tex}
+%\input{parts/related_work.tex}
+%\input{parts/conclusion_perspectives.tex}
+
+%\newpage
+%\#\#\#\# ancien \#\#\#\#
+%\newpage
+%\input{parts/00_intro}
+%\input{parts/01_gene}
+%\input{parts/02_model_guitare}
+
+\newpage
+
+\printbibliography
+
+\newpage
+
+
+\pagenumbering{roman}
+
+\input{parts/annexes}
+
+\end{document}

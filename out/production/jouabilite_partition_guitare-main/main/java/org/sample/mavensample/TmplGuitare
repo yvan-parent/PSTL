@@ -1,0 +1,9 @@
+        // Pour une guitare classique
+        guitare.nf = 12;
+        guitare.nc = 6;
+        guitare.scordatura = new int[]{52, 57, 62, 67, 71, 76};
+
+        // Pour un ukulele
+        guitare.nf = 10;
+        guitare.nc = 4;
+        guitare.scordatura = new int[]{67, 60, 64, 69};

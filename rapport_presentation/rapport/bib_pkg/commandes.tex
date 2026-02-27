@@ -1,0 +1,92 @@
+\newtheorem{defi}{Definition }[section]
+\newtheorem{exemple}{Exemple}[section]
+\newtheorem{rema}{Remarque}
+
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcommand{\nbCordes}{\ttt{nc}}
+\newcommand{\nbFrettes}{\ttt{nf}}
+\newcommand{\scordature}{\ttt{scorda}}
+
+\newcommand{\tailleMain}{\ttt{tailleMain}}
+\newcommand{\nbDoigtsUtil}{\ttt{nbDoigtsUtilisés}}
+\newcommand{\isBarre}{\ttt{barréPossible}}
+\newcommand{\nbPouce}{\ttt{nbCordesBloquéesPouce}}
+\newcommand{\dLegale}{\ttt{distanceLégale}}
+
+\newcommand{\accord}{\ttt{accord}}
+\newcommand{\nbAccord}{\ttt{nbAccord}}
+\newcommand{\lenAccord}{\ttt{lenAccord}}
+\newcommand{\indetPremier}{\mathcal{F}}
+
+\newcommand{\posiPhyPos}{\ttt{pos}\phi}
+
+\newcommand{\indet}{\mathcal{X}}
+\newcommand{\domaine}{\mathcal{D}}
+\newcommand{\contr}{\mathcal{C}}
+\newcommand{\modele}{\mathcal{M}}
+\newcommand{\defmodele}{\modele = \left(\indet, \domaine, \contr\right)}
+\newcommand{\ssi}{$\textit{ssi }$}
+
+
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \littletaller % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}
+
+\newcommand{\littletaller}{\mathchoice{\vphantom{\big|}}{}{}{}}
+
+\newcommand{\accolades}[1]{
+  \left\{#1\right\}
+}
+\newcommand{\internat}[1]{
+  \llbracket #1 \rrbracket
+}
+% écriture d'un accord sous la forme : fondamentale, liste de shifts
+\newcommand{\chord}[2]{
+    (#1\foreach \p in {#2}{, \p})
+}
+
+
+\newcommand{\tablature}[4]{  % représentation d'une tablature
+%on a en arguments : échelle, nc, nf, positions
+  \begin{tikzpicture}[scale=#1]
+    % dessin du manche
+    \draw[black, thick] (-0.5,1.5*#3) -- (#2-0.5,1.5*#3);
+    \draw[black, thick] (-0.5,1.5*0.1+1.5*#3) -- (#2-0.5,1.5*0.1+1.5*#3);
+    \newcounter{x}
+    \forloop{x}{0}{\value{x} < #2}{
+      \draw[gray, thick] (\value{x},0) -- (\value{x},1.5*#3);
+    }
+
+    \newcounter{y}
+    \forloop{y}{0}{\value{y} < #3}{
+      \draw[gray, thick] (-0.1,1.5*\value{y}) -- (#2-0.9,1.5*\value{y});
+    }
+    
+    \newcounter{i}
+    \setcounter{i}{0}
+    \foreach \p in {#4}{
+      \ifthenelse{\equal{\p}{0}}
+        {\filldraw[green] (\value{i}, 1.5*#3) circle (9pt);}
+        {\ifthenelse{\equal{\p}{-1}}
+          {\filldraw[red] (\value{i}, 1.5*#3) circle (9pt);}
+          {\filldraw[blue] (\value{i}, 0.75+1.5*#3-1.5*\p) circle (6pt);}
+        }
+      
+      \addtocounter{i}{1}
+    }
+	\end{tikzpicture}
+}
+
+
+\newcommand{\code}[2]{  % pour écrire du code
+  \begin{lstlisting}[language=#1]
+      #2
+	\end{lstlisting}
+}
+
+
+

@@ -1,0 +1,101 @@
+\section{Premier Modèle}
+\label{sec:PremierModel}
+
+Je me suis d'abord familiarisé avec Java et la PPC en réalisant un
+premier modèle pour répondre à un premier problème :
+\[\text{A partir d'un accord, trouver toutes les positions jouables sur un 
+manche de guitare.}\]
+
+Pour ce problème, nous modélisons dans un premier temps les objets
+étudiés (guitare, Guitariste, partition) puis nous décrivons des contraintes
+qui assurent une résolution du problème.
+
+\subsection{Modélisation des objets}
+\label{subsec:ModelGuitare}
+
+On implémente une guitare par :
+\begin{itemize}
+  \item \nbCordes : nombre de cordes (entier)
+  \item \nbFrettes : nombre de frettes (entier)
+  \item \scordature : scordature de la guitare (tableau d'entiers)
+\end{itemize}
+
+On implémente un ou une guitariste par :
+\begin{itemize}
+  \item \tailleMain : la taille de la main en le nombre de frêtes accessibles
+    depuis le haut du manche (entier)
+	\item \nbDoigtsUtil : le nombre de doigts utilisés pour jouer (entier)
+	\item \isBarre : $-1$ s'il est impossible de réaliser un barré, le
+  nombre de frettes accessibles quand on fait un barré sinon (entier)
+\end{itemize}
+
+\subsection{La distance sur le manche}
+\label{subse:distanceManche}
+
+Sur le manche de la guitare, les frettes ne sont pas disposées de manière
+régulière car le demi ton n'est pas défini de manière linéaire.
+Par exemple, pour augmenter d'une octave, on divise la longueur de la
+corde par deux. On peut alors trouver une relation entre le nombre de frettes
+accessibles depuis une position et \tailleMain.
+
+\begin{equation}
+  \label{eq:taille_frette}
+  \dLegale(position) = \tailleMain\times 2^{\frac{position}{12}}
+\end{equation}
+
+\subsection{Modèle PPC}
+\label{subsec:ModelePPC}
+
+Nous définisons ici le premier modèle PPC réalisé.
+
+\begin{defi}(Indéterminées)
+  \label{def:IndetPremier}
+  Les indéterminées du modèle sont les frettes pressées sur chaque corde. Cela
+  permet donc de définir une position
+  $\indetPremier = \accolades{\indetPremier_i}_{i\in I}$ où $I$ est une
+  numérotation des cordes.
+  Il y a donc \nbCordes \ indéterminées à valeur dans $\internat{-1, \nbFrettes}$.
+  $-1$ représente une corde non jouée, sinon c'est une corde jouée et pressée
+  sur la frette associée. $0$ représente la corde à vide.
+\end{defi}
+
+\begin{defi}(Contraintes)
+  \label{def:ContraintesPremier}
+  Pour ce modèle, nous avons un ensemble de contraintes. Premièrement, il faut
+  que les notes jouées soient uniquement des notes de l'accord. Cela nous
+  amène à la première contrainte :
+  \begin{equation}
+    \label{eq:played_in_chord}
+    \forall i\in \internat{ 1, \nbCordes }, \exists j\geq 1,
+    (\scordature[i]+\indetPremier_i)-(\accord[0]+\accord[j])
+    = 0[\mod 12]
+  \end{equation}
+
+  Il faut aussi que l'ensemble des notes de l'accord soient jouées, cela nous
+  amène à la deuxième contrainte :
+  \begin{equation}
+    \label{eq:chord_play}
+      \forall i\in \internat{ 1,\lenAccord }, \exists j\geq 1,
+      (\scordature[j]+\indetPremier_j)-(\accord[0]+\accord[i])
+    = 0[\mod 12]
+  \end{equation}
+  
+  On rappelle que l'octave n'est pas importante et qu'il y a $12$ demis tons
+  dans une octave d'où le modulo $12$.\\
+  Nous avons pour le moment des contraintes permettant d'assurer que ce que
+  l'on joue correspond à la suite d'accords.\\
+  Il faut de plus modéliser la contrainte de distance pour avoir une première
+  notion de jouabilité de la position.
+  Il faut que la distance entre les doigts ne dépasse pas une certainte borne.
+\end{defi}
+
+Après implémentation, le solver choco trouve toutes les solutions du modèle
+demandé, donc toutes les positions qui respectent les contraintes pour un 
+accord donné.
+
+Nous avons donc créé un modèle de
+contraintes permettant, à partir du chiffrage d'un accord, de trouver
+l'ensemble des positions physiquement jouables de cet accord.
+Cependant la notion de physiquement jouable reste assez limitée.
+Et on s'est pour l'instant restraint à un seul accord.
+\newpage

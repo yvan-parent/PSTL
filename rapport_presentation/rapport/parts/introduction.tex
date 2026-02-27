@@ -1,0 +1,22 @@
+\section{Introduction}
+\label{sec:Introduction}
+
+Dans la musique contemporaine, certaines partitions sont écrites par des 
+personnes qui ne pratiquent pas l'instrument. Il peut arriver que certains 
+compositeurs demandent à des musiciens de jouer des partitions difficiles, 
+voire impossibles. Aujourd'hui, le problème peut aussi se poser avec l'arrivé
+d'outils de génération probabiliste de partitions, ou de suite de positions.
+C'est sur cette considération que Charlotte \textsc{Truchet} et Mikhail 
+\textsc{Malt} ont décidés d'étudier la jouabilité de partition de guitare dans
+le cadre de la thèse de Charlotte \cite{CTThese}. Le problème était le 
+suivant : étant donné une suite d'accords, est-il possible de l'interpréter à 
+la guitare, si oui, comment l'interpréter de la manière la plus facile ?\\
+Au cours de mon stage, j'ai repris cette question dans l'objectif de réaliser
+un programme permettant de calculer une suite de positions à partir d'une suite
+d'accords en utilisant une approche par programation sous contraintes. 
+Pour l'implémentation de la résolutions, j'ai utilisé le solver Choco
+développéé par Charles \textsc{Prud'homme} \cite{Choco}.
+Dans un premier temps, je me suis familiarisé avec la notion de programmation
+sous contraintes, et ensuite, j'ai réalisé un modèle pour résoudre le problème
+posé, en discutant avec des guitaristes (ne l'étant pas moi même) afin de
+laisser le plus de liberté et de maniabilité aux instrumentistes.
