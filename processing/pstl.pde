@@ -1,3 +1,5 @@
+import org.sample.mavensample.App;
+
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
 float MARGE;
@@ -35,6 +37,9 @@ int[][] mesAccords = {{0, -1, 2, 0, 1, 0},
 
 
 void setup() {
+  
+  mesAccords = App.getInfos();
+  
   size(300, 350);
   
   MARGE = min(width * margeProp, height * margeProp);
@@ -48,6 +53,7 @@ void setup() {
   text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
        width * txtOffsetXAccord, height * txtOffsetYAccord);
   dessinerBoutons();
+  
 }
 
 void draw() {
