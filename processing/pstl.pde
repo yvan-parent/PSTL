@@ -1,52 +1,83 @@
-import org.sample.mavensample.App;
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
-float MARGE = 40;
+float MARGE;
+float lineRatio = 0.005;
 
 int indexAccord = 0;
 int step = 2000;
 long lastChange = 0;
-int txtSize = 16;
 
-int[][] infos;
+int txtSize;
+float txtProp = 0.05;
+
+float boutonLargeurRatio = 0.25;
+float boutonHauteurRatio = 0.08;
+float petitBoutonLargeurRatio = 0.12;
+float boutonYRatio = 0.85;
+float boutonTextSizeRatio = 0.035;
+float boutonXRatio = 0.13;
+float boutonSpacingRatio1 = 0.285;
+float boutonSpacingRatio2 = 0.415;
+float boutonSpacingRatio3 = 0.57;
+
+float offsetX = 0.17;
+float offsetY = 0.15;
+float txtOffsetXAccord = 2.2 * offsetX;
+float txtOffsetYAccord = 5.2 * offsetY;
+float margeProp = 0.13;
+
+boolean defilement_auto = true;
 
 int[][] mesAccords = {{0, -1, 2, 0, 1, 0},
                       {-1, 0, 2, 2, 2, 0},
                       {3 , 2, 0, 0, 0, 3},
                       {0 , 0, 2, 2, 2, 0}};
 
+
 void setup() {
-  size(300, 300);
+  size(300, 350);
+  
+  MARGE = min(width * margeProp, height * margeProp);
+  txtSize = int(height * txtProp);
+  
   background(255);
   lastChange = millis();
-  dessinerTabAccord(mesAccords[indexAccord], 50, 50);
+  dessinerTabAccord(mesAccords[indexAccord], width * offsetX, height * offsetY);
   fill(0);
   textSize(txtSize);
-  text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 120 , 280);
-  // infos = App.getInfos();
+  text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
+       width * txtOffsetXAccord, height * txtOffsetYAccord);
+  dessinerBoutons();
+}
+
+void draw() {
+  if (defilement_auto) {
+    if (millis() - lastChange > step) {
+      changerAccordSuivant();
+    }
+  }
 }
 
 void dessinerTabAccord(int[] cordes, float x, float y) {
   pushStyle();
   
-  // Paramètres de dessin
-  float cordesWidth = 5 * MARGE;
+  float cordesWidth = (NB_CORDES - 1) * MARGE;
   float rayon = MARGE * 0.3;
-  float line = 2;
+  float line = max(1, height * lineRatio); 
   
   stroke(0);
   strokeWeight(line);
   
-  // les cordes
+  // les cordes (lignes verticales)
   for (int i = 0; i < NB_CORDES; i++) {
     float cx = x + i * MARGE;
     line(cx, y, cx, y + cordesWidth);
   }
   
-  // les frettes
-  for (int f = 0; f < NB_FRETTES ; f++) {
+  // les frettes (lignes horizontales)
+  for (int f = 0; f < NB_FRETTES; f++) {
     float fy = y + f * MARGE;
-    line(x, fy, x + 5 * MARGE, fy);
+    line(x, fy, x + (NB_CORDES - 1) * MARGE, fy);
   }
   
   // indications pour chaque corde
@@ -54,9 +85,9 @@ void dessinerTabAccord(int[] cordes, float x, float y) {
     float cx = x + i * MARGE;
     float offY = y - MARGE * 0.6;
     
-    // corde non jouée (-1) : croix rouge en hauy
+    // corde non jouée (-1) : croix rouge en haut
     if (cordes[i] == -1) {
-      strokeWeight(2);
+      strokeWeight(line * 1.5);
       stroke(255, 0, 0); 
      
       line(cx - rayon, offY - rayon, 
@@ -64,20 +95,18 @@ void dessinerTabAccord(int[] cordes, float x, float y) {
       line(cx - rayon, offY + rayon, 
            cx + rayon, offY - rayon);
       
-      
     // Corde à vide (0) : rond vide en haut
     } else if (cordes[i] == 0) {
-      strokeWeight(1.5);
+      strokeWeight(line);
       stroke(0);
       fill(255);
       ellipse(cx, offY, rayon * 2, rayon * 2);
       
-      
-    // corde jouée avec frette i (i) : rond plein dans la frette i
+    // corde jouée avec frette i : rond plein dans la frette i
     } else {
       int frette = cordes[i];
-      if (frette >= 1 && frette <= 5) {
-        strokeWeight(1);
+      if (frette >= 1 && frette <= NB_FRETTES) {
+        strokeWeight(line);
         stroke(0);
         fill(0);
         float fy = y + (frette - 0.5) * MARGE;
@@ -86,21 +115,113 @@ void dessinerTabAccord(int[] cordes, float x, float y) {
     }
   }
   
-  // trait plus épais en haut
-  strokeWeight(8);
-  line(x - line, y, x + 5 * MARGE + line, y);
+  // trait plus épais en haut (sillet)
+  strokeWeight(line * 3);
+  line(x - line, y, x + (NB_CORDES - 1) * MARGE + line, y);
   
   popStyle();
 }
 
-void draw () {
-  if (millis() - lastChange > step) {
-    indexAccord = (indexAccord + 1) % mesAccords.length;
-    lastChange = millis();
-    background(255);
-    dessinerTabAccord(mesAccords[indexAccord], 50, 50);
+void dessinerBoutons() {
+  pushStyle();
+  
+  float boutonLargeur = width * boutonLargeurRatio;
+  float boutonHauteur = height * boutonHauteurRatio;
+  float petitBoutonLargeur = width * petitBoutonLargeurRatio;
+  float boutonY = height * boutonYRatio;
+  float texteSize = height * boutonTextSizeRatio;
+  float boutonX = width * boutonXRatio;
+  float boutonSpacing1 = width * boutonSpacingRatio1;
+  float boutonSpacing2 = width * boutonSpacingRatio2;
+  float boutonSpacing3 = width * boutonSpacingRatio3;
+  
+  
+  // Bouton mode auto/manuel
+  fill(defilement_auto ? color(200, 255, 200) : color(255, 200, 200));
+  stroke(0);
+  rect(boutonX, boutonY, boutonLargeur, boutonHauteur);
+  fill(0);
+  textSize(texteSize);
+  textAlign(CENTER, CENTER);
+  text(defilement_auto ? "Mode Auto" : "Mode Manuel", 
+       boutonX + boutonLargeur/2, 
+       boutonY + boutonHauteur/2);
+  
+  // Boutons précédent et suivant
+  if (!defilement_auto) {
+    // Bouton précédent
+    fill(200);
+    rect(boutonX + boutonSpacing1, boutonY, petitBoutonLargeur, boutonHauteur);
     fill(0);
-    textSize(txtSize);
-    text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 120 , 280);
+    text("◀", boutonX + boutonSpacing1 + petitBoutonLargeur/2, boutonY + boutonHauteur/2);
+    
+    // Bouton suivant
+    fill(200);
+    rect(boutonX + boutonSpacing2, boutonY, petitBoutonLargeur, boutonHauteur);
+    fill(0);
+    text("▶", boutonX + boutonSpacing2 + petitBoutonLargeur/2, boutonY + boutonHauteur/2);
   }
+  
+  // Affichage de l'index de l'accord
+  fill(255);
+  rect(boutonX + boutonSpacing3, boutonY, petitBoutonLargeur * 1.2, boutonHauteur);
+  fill(0);
+  text((indexAccord + 1) + "/" + mesAccords.length, 
+       boutonX + boutonSpacing3 + petitBoutonLargeur * 0.6, 
+       boutonY + boutonHauteur/2);
+  
+  textAlign(LEFT);
+  popStyle();
+}
+
+
+void mousePressed() {
+  float boutonLargeur = width * boutonLargeurRatio;
+  float boutonHauteur = height * boutonHauteurRatio;
+  float petitBoutonLargeur = width * petitBoutonLargeurRatio;
+  float boutonY = height * boutonYRatio;
+  float boutonX = width * boutonXRatio;
+  float boutonSpacing1 = width * boutonSpacingRatio1;
+  float boutonSpacing2 = width * boutonSpacingRatio2;
+  
+  // bouton mode auto/manuel
+  if (mouseX > boutonX && mouseX < boutonX + boutonLargeur && 
+      mouseY > boutonY && mouseY < boutonY + boutonHauteur) {
+    defilement_auto = !defilement_auto;
+    lastChange = millis();
+    redessinerTout();
+  }
+  
+  //  boutons de navig ( mode manuel)
+  if (!defilement_auto) {
+    // Bouton précédent
+    if (mouseX > boutonX + boutonSpacing1 && mouseX < boutonX + boutonSpacing1 + petitBoutonLargeur && 
+        mouseY > boutonY && mouseY < boutonY + boutonHauteur) {
+      indexAccord = (indexAccord - 1 + mesAccords.length) % mesAccords.length;
+      redessinerTout();
+    }
+    
+    // Bouton suivant
+    if (mouseX > boutonX + boutonSpacing2 && mouseX < boutonX + boutonSpacing2 + petitBoutonLargeur && 
+        mouseY > boutonY && mouseY < boutonY + boutonHauteur) {
+      indexAccord = (indexAccord + 1) % mesAccords.length;
+      redessinerTout();
+    }
+  }
+}
+
+void changerAccordSuivant() {
+  indexAccord = (indexAccord + 1) % mesAccords.length;
+  lastChange = millis();
+  redessinerTout();
+}
+
+void redessinerTout() {
+  background(255);
+  dessinerTabAccord(mesAccords[indexAccord], width * offsetX, height * offsetY);
+  fill(0);
+  textSize(txtSize);
+  text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
+       width * txtOffsetXAccord, height * txtOffsetYAccord);
+  dessinerBoutons();
 }
