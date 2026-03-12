@@ -1,35 +1,39 @@
+int NB_CORDES = 6;
+int NB_FRETTES = 6;
+float MARGE = 40;
+
 void setup() {
   size(400, 300);
   background(255);
 }
 
-void dessinerTabAccord(int[] cordes, float x, float y, float marge) {
+void dessinerTabAccord(int[] cordes, float x, float y) {
   pushStyle();
   
   // Paramètres de dessin
-  float cordesWidth = 5 * marge;
-  float rayon = marge * 0.3;
+  float cordesWidth = 5 * MARGE;
+  float rayon = MARGE * 0.3;
   float line = 2;
   
   stroke(0);
   strokeWeight(line);
   
   // les cordes
-  for (int i = 0; i < 6; i++) {
-    float cx = x + i * marge;
+  for (int i = 0; i < NB_CORDES; i++) {
+    float cx = x + i * MARGE;
     line(cx, y, cx, y + cordesWidth);
   }
   
   // les frettes
-  for (int f = 0; f <= 5; f++) {
-    float fy = y + f * marge;
-    line(x, fy, x + 5 * marge, fy);
+  for (int f = 0; f < NB_FRETTES ; f++) {
+    float fy = y + f * MARGE;
+    line(x, fy, x + 5 * MARGE, fy);
   }
   
-  // indicatiosn pour chaque corde
-  for (int i = 0; i < 6; i++) {
-    float cx = x + i * marge;
-    float offY = y - marge * 0.6;
+  // indications pour chaque corde
+  for (int i = 0; i < NB_CORDES; i++) {
+    float cx = x + i * MARGE;
+    float offY = y - MARGE * 0.6;
     
     // corde non jouée (-1) : croix rouge en hauy
     if (cordes[i] == -1) {
@@ -57,7 +61,7 @@ void dessinerTabAccord(int[] cordes, float x, float y, float marge) {
         strokeWeight(1);
         stroke(0);
         fill(0);
-        float fy = y + (frette - 0.5) * marge;
+        float fy = y + (frette - 0.5) * MARGE;
         ellipse(cx, fy, rayon * 2, rayon * 2);
       }
     }
@@ -65,12 +69,12 @@ void dessinerTabAccord(int[] cordes, float x, float y, float marge) {
   
   // trait plus épais en haut
   strokeWeight(8);
-  line(x - line, y, x + 5 * marge + line, y);
+  line(x - line, y, x + 5 * MARGE + line, y);
   
   popStyle();
 }
 
 void draw () {
-  int[] monAccord = {0, 0, 2, 0, 1, 0};
-  dessinerTabAccord(monAccord, 50, 50, 40);
+  int[] monAccord = {0, -1, 2, 0, 1, 0};
+  dessinerTabAccord(monAccord, 50, 50);
 }
