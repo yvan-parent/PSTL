@@ -28,7 +28,7 @@ public class App
 	 * @param player 		le modèle de l'instrumentiste
 	 * @param partition		le modèle de la pratition
 	 */
-	static void findChords(ClasseGuitare guitare, ClasseGuitariste player, ClassePartition partition)
+	static int[][] findChords(ClasseGuitare guitare, ClasseGuitariste player, ClassePartition partition, boolean print)
 	{
 		// 1. Définition du modèle
 		// 1.1. Définition
@@ -45,12 +45,17 @@ public class App
 			positions_legales.put(partition.chords[i], new Tuples(true));
 		}
 		ClasseOutilsMusique.creerTuple(guitare, player, partition, model, positions_legales, criteresStock);
-		for (int i=0; i<partition.chords.length; i++)
-		{
-			System.out.println(positions_legales.get(partition.chords[i]));	
-		}
 		
-		System.out.println("Espace solus time: " + (System.currentTimeMillis() - time1) + " ms");
+		System.out.println("step 1");
+
+		if (print) {
+			for (int i=0; i<partition.chords.length; i++)
+			{
+				System.out.println(positions_legales.get(partition.chords[i]));	
+			}
+			
+			System.out.println("Espace solus time: " + (System.currentTimeMillis() - time1) + " ms");
+		}
 
 		// 1.3. on créé nos indéterminées en ajoutant les contraintes
 		IntVar[][] doigtes = ClasseOutilsMusique.ajoutContraintes(guitare, player, partition, model, positions_legales);
@@ -61,6 +66,8 @@ public class App
 			System.out.println(positions_legales.get(partition.chords[i]));
 		}
 		*/
+
+		System.out.println("step 2");
 		
 		// 2. Résolution
 		Solver solver = model.getSolver();
@@ -68,6 +75,8 @@ public class App
         //        Search.lastConflict(Search.inputOrderLBSearch(ArrayUtils.flatten(doigtes)))
         //);
         /**/
+		System.out.println("step 3");
+
 		solver.setSearch(
                 Search.inputOrderLBSearch(ArrayUtils.flatten(doigtes))
         );
@@ -78,10 +87,12 @@ public class App
                 Search.inputOrderLBSearch(ArrayUtils.flatten(doigtes))
         ));
 		*/
-		solver.showShortStatistics();
+		System.out.println("step 4");
+		if (print) solver.showShortStatistics();
 		IntVar toMinimize = ClasseOutilsMusique.fonctionToMinimize(model, doigtes, guitare, partition, player, criteresStock);		// La quantité à minimiser
+		System.out.println("step 5");
 		Solution solution = solver.findOptimalSolution(toMinimize, Model.MINIMIZE);		// Une solution minimisant toMinimize
-
+		System.out.println("step 6");
 
 		// 3. Affichage
 		int[][] chords_v = new int[partition.chords.length][guitare.nc];
@@ -91,9 +102,14 @@ public class App
 			{
 				chords_v[j][k] = solution.getIntVal(doigtes[j][k]);
 			}
-			ClasseOutilsIO.printChord(guitare, chords_v[j], j);
+			if (print) { 
+				ClasseOutilsIO.printChord(guitare, chords_v[j], j);
+			}
 		}
-		System.out.println("toMinimize ---> "+solution.getIntVal(toMinimize));
+		System.out.println("step 7");
+		if (print) { System.out.println("toMinimize ---> "+solution.getIntVal(toMinimize)); }
+
+		return chords_v;
 	}
 
 
@@ -159,7 +175,65 @@ public class App
 
 		// 4. Resolution 
 		long time = System.currentTimeMillis();
-		findChords(guitare, player, partition);
+		int[][] res = findChords(guitare, player, partition, true);
 		System.out.println("Resolution time: " + (System.currentTimeMillis() - time) + " ms");
+	}
+
+	public static int[][] getInfos () {
+		// 1. Model of the guitar
+		ClasseGuitare guitare = new ClasseGuitare();
+		// Pour une guitare classique
+		guitare.nf = 13;
+		guitare.nc = 6;
+		guitare.scordatura = new int[]{52, 57, 62, 67, 71, 76};
+
+		// 2. Model of the player
+		ClasseGuitariste player = new ClasseGuitariste();
+		player.distanceFirstFrette = 4;							// Max distance from the first fret
+		player.nbDoigts = 4;									// Number of finger excluding the thumb
+		player.barre = 3;										// Wether barrés are possible -1 impossible, else number of fret after the barre in first position
+
+		player.preferences = new ClassePreferences();
+		player.preferences.fretteMoyenneFix = false;
+		player.preferences.fretteMoyenne = 0;
+		player.preferences.fretteMoyennePoids = 100;
+
+		player.preferences.fondaBassFix = false;
+		player.preferences.fondaBassPoids = 0;
+
+		player.preferences.cordesNonJoueesFix = true;
+		player.preferences.cordesNonJoueesMax = 1;
+
+		player.preferences.cordesAVidesFix = false;
+		player.preferences.cordesAVidesPoids = 0;
+
+		player.preferences.distanceMaxSouhaitee = 3;
+		player.preferences.distanceMaxSouhaiteePoids = 5;
+
+		player.preferences.doigtsUtilisesFix = true;
+		player.preferences.doigtsUtilisesMaxNb = 3;
+
+		player.preferences.norme1Fix = true;
+		player.preferences.norme1Poids = 5;
+
+		player.preferences.pasRepetitionFix = false;
+		player.preferences.pasRepetitionMax = 7;
+
+
+		// 3. Modele de la suite d'accords
+		ClassePartition partition = new ClassePartition();
+		// Les Feuilles Mortes Y.M J.P J.K
+		partition.chords = new int[][]{
+				{57, 0, 3, 7, 10},
+				{62, 0, 4, 7, 10},
+				{67, 0, 4, 7},
+				{57, 0, 3, 7, 10},
+				{59, 0, 4, 7, 10},
+				{64, 0, 3, 7},
+		};
+
+		// 4. Resolution
+		int[][] res = findChords(guitare, player, partition, false);
+		return res;
 	}
 }
