@@ -1,14 +1,29 @@
 import org.sample.mavensample.App;
-
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
 float MARGE = 40;
+
+int indexAccord = 0;
+int step = 2000;
+long lastChange = 0;
+int txtSize = 16;
+
 int[][] infos;
 
+int[][] mesAccords = {{0, -1, 2, 0, 1, 0},
+                      {-1, 0, 2, 2, 2, 0},
+                      {3 , 2, 0, 0, 0, 3},
+                      {0 , 0, 2, 2, 2, 0}};
+
 void setup() {
-  size(400, 300);
+  size(300, 300);
   background(255);
-  infos = App.getInfos();
+  lastChange = millis();
+  dessinerTabAccord(mesAccords[indexAccord], 50, 50);
+  fill(0);
+  textSize(txtSize);
+  text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 120 , 280);
+  // infos = App.getInfos();
 }
 
 void dessinerTabAccord(int[] cordes, float x, float y) {
@@ -79,6 +94,13 @@ void dessinerTabAccord(int[] cordes, float x, float y) {
 }
 
 void draw () {
-  int[] monAccord = {0, -1, 2, 0, 1, 0};
-  dessinerTabAccord(monAccord, 50, 50);
+  if (millis() - lastChange > step) {
+    indexAccord = (indexAccord + 1) % mesAccords.length;
+    lastChange = millis();
+    background(255);
+    dessinerTabAccord(mesAccords[indexAccord], 50, 50);
+    fill(0);
+    textSize(txtSize);
+    text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 120 , 280);
+  }
 }
