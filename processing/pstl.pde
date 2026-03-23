@@ -30,15 +30,21 @@ float margeProp = 0.13;
 
 boolean defilement_auto = true;
 
-int[][] mesAccords = {{0, -1, 2, 0, 1, 0},
-                      {-1, 0, 2, 2, 2, 0},
-                      {3 , 2, 0, 0, 0, 3},
-                      {0 , 0, 2, 2, 2, 0}};
+int[][] mesAccords;
 
 
 void setup() {
   
-  mesAccords = App.getInfos();
+  int[][] partition_chords = {
+     {57, 0, 3, 7, 10},
+     {62, 0, 4, 7, 10},
+     {67, 0, 4, 7},
+     {57, 0, 3, 7, 10},
+     {59, 0, 4, 7, 10},
+     // {64, 0, 3, 7},
+  };
+  
+  mesAccords = App.getInfos(partition_chords);
   
   size(300, 350);
   
