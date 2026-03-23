@@ -179,7 +179,7 @@ public class App
 		System.out.println("Resolution time: " + (System.currentTimeMillis() - time) + " ms");
 	}
 
-	public static int[][] getInfos () {
+	public static int[][] getInfos (int[][] partition_chords) {
 		// 1. Model of the guitar
 		ClasseGuitare guitare = new ClasseGuitare();
 		// Pour une guitare classique
@@ -223,17 +223,19 @@ public class App
 		// 3. Modele de la suite d'accords
 		ClassePartition partition = new ClassePartition();
 		// Les Feuilles Mortes Y.M J.P J.K
-		partition.chords = new int[][]{
-				{57, 0, 3, 7, 10},
-				{62, 0, 4, 7, 10},
-				{67, 0, 4, 7},
-				{57, 0, 3, 7, 10},
-				{59, 0, 4, 7, 10},
-				{64, 0, 3, 7},
-		};
+		// partition.chords = new int[][]{
+		// 		{57, 0, 3, 7, 10},
+		// 		{62, 0, 4, 7, 10},
+		// 		{67, 0, 4, 7},
+		// 		{57, 0, 3, 7, 10},
+		// 		{59, 0, 4, 7, 10},
+		// 		{64, 0, 3, 7},
+		// };
+		partition.chords = partition_chords;
 
 		// 4. Resolution
 		int[][] res = findChords(guitare, player, partition, false);
 		return res;
 	}
+	
 }
