@@ -32,8 +32,8 @@ public class App
 	{
 		// 1. Définition du modèle
 		// 1.1. Définition
-		Model model = new Model("Chord", Settings.init().setLCG(true));
-		//Model model = new Model("Chord");
+		// Model model = new Model("Chord", Settings.init().setLCG(true));
+		Model model = new Model("Chord");
 		
 		long time1 = System.currentTimeMillis();
 		
@@ -91,8 +91,14 @@ public class App
 		if (print) solver.showShortStatistics();
 		IntVar toMinimize = ClasseOutilsMusique.fonctionToMinimize(model, doigtes, guitare, partition, player, criteresStock);		// La quantité à minimiser
 		System.out.println("step 5");
+		solver.limitTime("60s");
 		Solution solution = solver.findOptimalSolution(toMinimize, Model.MINIMIZE);		// Une solution minimisant toMinimize
 		System.out.println("step 6");
+
+		if (solution == null)
+		{
+			throw new RuntimeException("Aucune solution trouvée");
+		}
 
 		// 3. Affichage
 		int[][] chords_v = new int[partition.chords.length][guitare.nc];

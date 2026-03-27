@@ -34,6 +34,7 @@ int[][] mesAccords;
 
 
 void setup() {
+  size(300, 350);
   
   int[][] partition_chords = {
      {57, 0, 3, 7, 10},
@@ -41,12 +42,29 @@ void setup() {
      {67, 0, 4, 7},
      {57, 0, 3, 7, 10},
      {59, 0, 4, 7, 10},
-     // {64, 0, 3, 7},
+     {64, 0, 3, 7},
   };
+ 
+ Thread t = new Thread(null, new Runnable() {
+    public void run() {
+      try {
+        mesAccords = App.getInfos(partition_chords); // ton appel
+        println("Calcul terminé !");
+      } catch (StackOverflowError e) {
+        println("Stack overflow confirmé !");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
   
-  mesAccords = App.getInfos(partition_chords);
+  t.start();
   
-  size(300, 350);
+  try {
+    t.join(); // attend que le thread finisse avant de continuer
+  } catch (InterruptedException e) {
+    println("Thread interrompu !");
+  }
   
   MARGE = min(width * margeProp, height * margeProp);
   txtSize = int(height * txtProp);
