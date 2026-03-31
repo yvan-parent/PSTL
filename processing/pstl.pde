@@ -47,14 +47,8 @@ void setup() {
  
  Thread t = new Thread(null, new Runnable() {
     public void run() {
-      try {
-        mesAccords = App.getInfos(partition_chords); // ton appel
-        println("Calcul terminé !");
-      } catch (StackOverflowError e) {
-        println("Stack overflow confirmé !");
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      mesAccords = App.getInfos(partition_chords, 10);
+      println("Calcul terminé !");
     }
   }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
   
@@ -63,7 +57,7 @@ void setup() {
   try {
     t.join(); // attend que le thread finisse avant de continuer
   } catch (InterruptedException e) {
-    println("Thread interrompu !");
+    println("Thread interrompu ! : "+e);
   }
   
   MARGE = min(width * margeProp, height * margeProp);

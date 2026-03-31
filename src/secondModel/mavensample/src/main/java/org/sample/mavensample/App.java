@@ -28,7 +28,7 @@ public class App
 	 * @param player 		le modèle de l'instrumentiste
 	 * @param partition		le modèle de la pratition
 	 */
-	static int[][] findChords(ClasseGuitare guitare, ClasseGuitariste player, ClassePartition partition, boolean print)
+	static int[][] findChords(ClasseGuitare guitare, ClasseGuitariste player, ClassePartition partition, boolean print, int LimitSeconds)
 	{
 		// 1. Définition du modèle
 		// 1.1. Définition
@@ -91,7 +91,7 @@ public class App
 		if (print) solver.showShortStatistics();
 		IntVar toMinimize = ClasseOutilsMusique.fonctionToMinimize(model, doigtes, guitare, partition, player, criteresStock);		// La quantité à minimiser
 		System.out.println("step 5");
-		solver.limitTime("60s");
+		solver.limitTime(LimitSeconds+"s");
 		Solution solution = solver.findOptimalSolution(toMinimize, Model.MINIMIZE);		// Une solution minimisant toMinimize
 		System.out.println("step 6");
 
@@ -181,11 +181,11 @@ public class App
 
 		// 4. Resolution 
 		long time = System.currentTimeMillis();
-		int[][] res = findChords(guitare, player, partition, true);
+		int[][] res = findChords(guitare, player, partition, true, 1000);
 		System.out.println("Resolution time: " + (System.currentTimeMillis() - time) + " ms");
 	}
 
-	public static int[][] getInfos (int[][] partition_chords) {
+	public static int[][] getInfos (int[][] partition_chords, int TimeLimit) {
 		// 1. Model of the guitar
 		ClasseGuitare guitare = new ClasseGuitare();
 		// Pour une guitare classique
@@ -240,7 +240,7 @@ public class App
 		partition.chords = partition_chords;
 
 		// 4. Resolution
-		int[][] res = findChords(guitare, player, partition, false);
+		int[][] res = findChords(guitare, player, partition, false, TimeLimit);
 		return res;
 	}
 	
