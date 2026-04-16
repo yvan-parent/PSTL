@@ -53,7 +53,7 @@ void setup() {
  Thread t1 = new Thread(null, new Runnable() {
     public void run() {
       // mesAccords = App.getInfos(partition_chords, false);
-      mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 4000);
+      mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 1000);
       println("Calcul terminé !");
     }
   }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
@@ -103,6 +103,7 @@ void setup() {
   text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
        width * txtOffsetXAccord, height * txtOffsetYAccord);
   dessinerBoutons();
+  jouerSonAccord(0);
   
 }
 
