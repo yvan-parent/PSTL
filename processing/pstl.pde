@@ -42,18 +42,18 @@ void setup() {
   size(300, 350);
   
   int[][] partition_chords = {
-     {57, 0, 3, 7, 10},
-     {62, 0, 4, 7, 10},
-     {67, 0, 4, 7},
-     {57, 0, 3, 7, 10},
-     {59, 0, 4, 7, 10},
-     {64, 0, 3, 7},
+    {57, 0, 3, 7, 10},
+    {62, 0, 4, 7, 10},                    
+    {67, 0, 4, 7},
+    {57, 0, 3, 7, 10},
+    {64, 0, 3, 7}
   };
   samples = new double[partition_chords.length][];
  
  Thread t1 = new Thread(null, new Runnable() {
     public void run() {
-      mesAccords = App.getInfos(partition_chords, 10);
+      // mesAccords = App.getInfos(partition_chords, false);
+      mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 4000);
       println("Calcul terminé !");
     }
   }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
