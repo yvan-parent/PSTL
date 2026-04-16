@@ -1,5 +1,8 @@
 import org.sample.mavensample.App;
+import processing.sound.SoundFile;
+import processing.sound.*;
 
+KarplusStrong ks;
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
 float MARGE;
@@ -31,7 +34,9 @@ float margeProp = 0.13;
 boolean defilement_auto = true;
 
 int[][] mesAccords;
-
+float sample_duration = 5.0;
+double[][] samples;
+SoundFile[] sons;
 
 void setup() {
   size(300, 350);
@@ -44,20 +49,47 @@ void setup() {
      {59, 0, 4, 7, 10},
      {64, 0, 3, 7},
   };
+  samples = new double[partition_chords.length][];
  
- Thread t = new Thread(null, new Runnable() {
+ Thread t1 = new Thread(null, new Runnable() {
     public void run() {
       mesAccords = App.getInfos(partition_chords, 10);
       println("Calcul terminé !");
     }
   }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
+  Thread t2 = new Thread(null, new Runnable() {
+    public void run() {
+      for (int i = 0; i < partition_chords.length; i++) {
+        String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
+        samples[i] = KarplusStrong.generateChord(partition_chords[i], sample_duration);
+        try {
+          KarplusStrong.saveToWav(samples[i], filePath);
+        } catch (Exception e) {
+          println("Impossible de générer les sons. Erreur : " + e);   
+        }
+      }
+    }
+  }, "sound-thread", 64 * 1024 *1024);
   
-  t.start();
-  
+  t1.start();
+  t2.start();
   try {
-    t.join(); // attend que le thread finisse avant de continuer
+    t1.join(); // attend que le thread finisse avant de continuer
+    t2.join();
   } catch (InterruptedException e) {
     println("Thread interrompu ! : "+e);
+  }
+  
+  sons = new SoundFile[partition_chords.length];
+  for (int i = 0; i < partition_chords.length; i++) {
+    String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
+    File f = new File(filePath);
+    if (f.exists()) {
+      sons[i] = new SoundFile(this, filePath);
+      println("Son chargé pour l'accord " + i);
+    } else {
+      println("Fichier manquant : " + filePath);
+    }
   }
   
   MARGE = min(width * margeProp, height * margeProp);
@@ -79,6 +111,13 @@ void draw() {
     if (millis() - lastChange > step) {
       changerAccordSuivant();
     }
+  }
+}
+
+void jouerSonAccord(int index) {
+  if (sons != null && index >= 0 && index < sons.length && sons[index] != null) {
+    sons[index].stop();
+    sons[index].play();
   }
 }
 
@@ -223,6 +262,7 @@ void mousePressed() {
         mouseY > boutonY && mouseY < boutonY + boutonHauteur) {
       indexAccord = (indexAccord - 1 + mesAccords.length) % mesAccords.length;
       redessinerTout();
+      jouerSonAccord(indexAccord);
     }
     
     // Bouton suivant
@@ -230,6 +270,7 @@ void mousePressed() {
         mouseY > boutonY && mouseY < boutonY + boutonHauteur) {
       indexAccord = (indexAccord + 1) % mesAccords.length;
       redessinerTout();
+      jouerSonAccord(indexAccord);
     }
   }
 }
@@ -238,6 +279,7 @@ void changerAccordSuivant() {
   indexAccord = (indexAccord + 1) % mesAccords.length;
   lastChange = millis();
   redessinerTout();
+  jouerSonAccord(indexAccord);
 }
 
 void redessinerTout() {
