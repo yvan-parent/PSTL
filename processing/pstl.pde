@@ -1,8 +1,21 @@
 import org.sample.mavensample.App;
 import processing.sound.SoundFile;
 import processing.sound.*;
+import controlP5.*;
 
-KarplusStrong ks;
+ControlP5 c;
+Textfield inputField;
+Button addButton;
+float yStart = 100;
+float lineHeight = 35; 
+float deleteW = 70;
+ArrayList<int[]> tempAccords = new ArrayList<int[]>();
+ArrayList<Button> deleteButtons = new ArrayList<Button>();
+
+boolean editMode = false;
+boolean pendingPagePrincipal = false;
+
+
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
 float MARGE;
@@ -38,82 +51,137 @@ float sample_duration = 5.0;
 double[][] samples;
 SoundFile[] sons;
 
+
 void setup() {
   size(300, 350);
+  c = new ControlP5(this);
   
-  int[][] partition_chords = {
+  /* int[][] partition_chords = {
     {57, 0, 3, 7, 10},
     {62, 0, 4, 7, 10},                    
     {67, 0, 4, 7},
     {57, 0, 3, 7, 10},
     {64, 0, 3, 7}
-  };
-  samples = new double[partition_chords.length][];
+  }; 
+  samples = new double[partition_chords.length][]; */
  
- Thread t1 = new Thread(null, new Runnable() {
-    public void run() {
-      // mesAccords = App.getInfos(partition_chords, false);
-      mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 1000);
-      println("Calcul terminé !");
-    }
-  }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
-  Thread t2 = new Thread(null, new Runnable() {
-    public void run() {
-      for (int i = 0; i < partition_chords.length; i++) {
-        String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
-        samples[i] = KarplusStrong.generateChord(partition_chords[i], sample_duration);
-        try {
-          KarplusStrong.saveToWav(samples[i], filePath);
-        } catch (Exception e) {
-          println("Impossible de générer les sons. Erreur : " + e);   
-        }
-      }
-    }
-  }, "sound-thread", 64 * 1024 *1024);
-  
-  t1.start();
-  t2.start();
-  try {
-    t1.join(); // attend que le thread finisse avant de continuer
-    t2.join();
-  } catch (InterruptedException e) {
-    println("Thread interrompu ! : "+e);
-  }
-  
-  sons = new SoundFile[partition_chords.length];
-  for (int i = 0; i < partition_chords.length; i++) {
-    String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
-    File f = new File(filePath);
-    if (f.exists()) {
-      sons[i] = new SoundFile(this, filePath);
-      println("Son chargé pour l'accord " + i);
-    } else {
-      println("Fichier manquant : " + filePath);
-    }
-  }
-  
-  MARGE = min(width * margeProp, height * margeProp);
-  txtSize = int(height * txtProp);
-  
-  background(255);
-  lastChange = millis();
-  dessinerTabAccord(mesAccords[indexAccord], width * offsetX, height * offsetY);
-  fill(0);
-  textSize(txtSize);
-  text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
-       width * txtOffsetXAccord, height * txtOffsetYAccord);
-  dessinerBoutons();
-  jouerSonAccord(0);
+  page_principal();
+ 
   
 }
 
 void draw() {
-  if (defilement_auto) {
+  if (pendingPagePrincipal) {
+    pendingPagePrincipal = false;
+    background(255);
+    c.remove("setAccords");
+    c.remove("validerAccord");
+    if (inputField != null) c.remove(inputField.getName());
+    for (Button b : deleteButtons) c.remove(b.getName());
+    deleteButtons.clear();
+    page_principal();
+    return;
+  }
+  if (defilement_auto && mesAccords != null && !editMode) {
     if (millis() - lastChange > step) {
       changerAccordSuivant();
     }
   }
+  if (editMode) {
+   background(255);
+   fill(0);
+   textSize(txtProp*height*0.8);
+   text("Saisir un accord (ex: 57, 0, 3, 7, 10) :", 2*width/30, height/15); 
+   text("Accords : ", 2*width/30, height/4);
+   int y = int(yStart);
+   for (int i = 0; i < tempAccords.size(); i++) {
+     int[] accord = tempAccords.get(i);
+     String str = join(nf(accord,0), ",");
+     text(str, 2*width/30, y + lineHeight/2);
+     y += lineHeight;
+   }
+  }
 }
+ 
+void page_principal() {
+  background(255);
+  c.addButton("ajoutChords")
+  .setPosition(9 * width / 10, 0)
+  .setSize(width / 10, height / 15)
+  .setLabel("...");
+  if (tempAccords.isEmpty()) {
+    fill(0);
+     textSize(height*txtProp);
+     text("Aucun accord saisi", width/3, height/2 ); 
+     return;
+  } else {
+  mesAccords = tempAccords.toArray(new int[0][]);
+  int [][] partition_chords = mesAccords;
+  if (partition_chords == null || partition_chords.length == 0) {
+     fill(0);
+     textSize(height*txtProp);
+     text("Aucun accord saisi", width/3, height/2 ); 
+     return;
+  } else {
+    Thread t1 = new Thread(null, new Runnable() {
+      public void run() {
+        // mesAccords = App.getInfos(partition_chords, false);
+        mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 1000);
+        println("Calcul terminé !");
+      }
+    }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
+    samples = new double[partition_chords.length][];
+    Thread t2 = new Thread(null, new Runnable() {
+      public void run() {
+        for (int i = 0; i < partition_chords.length; i++) {
+          String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
+          samples[i] = KarplusStrong.generateChord(partition_chords[i], sample_duration);
+          try {
+            KarplusStrong.saveToWav(samples[i], filePath);
+          } catch (Exception e) {
+            println("Impossible de générer les sons. Erreur : " + e);   
+          }
+        }
+      }
+    }, "sound-thread", 64 * 1024 *1024);
+    
+    t1.start();
+    t2.start();
+    try {
+      t1.join(); // attend que le thread finisse avant de continuer
+      t2.join();
+    } catch (InterruptedException e) {
+      println("Thread interrompu ! : "+ e);
+    }
+    
+    sons = new SoundFile[partition_chords.length];
+    for (int i = 0; i < partition_chords.length; i++) {
+      String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
+      File f = new File(filePath);
+      if (f.exists()) {
+        sons[i] = new SoundFile(this, filePath);
+        println("Son chargé pour l'accord " + i);
+      } else {
+        println("Fichier manquant : " + filePath);
+      }
+    }
+    
+    MARGE = min(width * margeProp, height * margeProp);
+    txtSize = int(height * txtProp);
+    
+    background(255);
+    lastChange = millis();
+    dessinerTabAccord(mesAccords[indexAccord], width * offsetX, height * offsetY);
+    fill(0);
+    textSize(txtSize);
+    text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
+         width * txtOffsetXAccord, height * txtOffsetYAccord);
+    dessinerBoutons();
+    jouerSonAccord(0);
+  }
+  }
+}  
+
 
 void jouerSonAccord(int index) {
   if (sons != null && index >= 0 && index < sons.length && sons[index] != null) {
@@ -273,7 +341,7 @@ void mousePressed() {
       redessinerTout();
       jouerSonAccord(indexAccord);
     }
-  }
+}
 }
 
 void changerAccordSuivant() {
@@ -291,4 +359,97 @@ void redessinerTout() {
   text("Accord " + (indexAccord + 1) + "/" + mesAccords.length, 
        width * txtOffsetXAccord, height * txtOffsetYAccord);
   dessinerBoutons();
+}
+
+void ajoutChords() {
+ editMode = true;
+ c.getController("ajoutChords").remove();
+ background(255);
+ inputField = c.addTextfield("accordInput")
+               .setPosition(2*width/30, height/10)
+               .setSize(2*width/3, height/10)
+               .setColorBackground(color(250, 250, 250))
+               .setLabelVisible(false)
+               .setCaptionLabel("")
+               .setColor(color(0, 0, 0))
+               .setColorCursor(color(0, 0, 0));
+ 
+ addButton = c.addButton("validerAccord")
+              .setPosition(3*width/4, height/10)
+              .setSize(width/5, height/10)
+              .setLabel("Ajouter");
+              
+ c.addButton("setAccords")
+  .setPosition(7*width/8, 9*height/10)
+  .setSize(height/10, height/10)
+  .setColorBackground(color(0,250,0))
+  .setColorForeground(color(0,220,0))
+  .setLabel("OK");
+}
+
+void setAccords() {
+ indexAccord = 0; 
+ editMode = false;
+ pendingPagePrincipal = true;
+}
+
+void validerAccord() {
+ String saisie = inputField.getText().trim();
+ if (saisie.length() == 0) return;
+ 
+ String[] parsed = saisie.split(",");
+ int[] accord = new int[parsed.length];
+ try{
+   for (int i = 0; i < parsed.length; i++) {
+     accord[i] = Integer.parseInt(parsed[i].trim());
+   }
+   tempAccords.add(accord);
+   inputField.clear();
+   refreshButtons();
+ } catch (NumberFormatException e) {
+   println("Format invalide : " + saisie);
+}
+}
+
+void refreshButtons() {
+  for (Button b : deleteButtons) {
+    c.remove(b.getName());
+  }
+  deleteButtons.clear();
+  
+  for (int i = 0; i < tempAccords.size(); i++) {
+    float x = width - deleteW - 20;
+    float y = yStart + i * lineHeight;
+    Button btn = c.addButton("del_"+i)
+                  .setPosition(x, y)
+                  .setSize(int(deleteW), int(lineHeight - 5))
+                  .setLabel("X")
+                  .setColorBackground(color(200, 0, 0));
+    deleteButtons.add(btn);
+  }
+}
+
+void supprimerAccord(int index) {
+  if (index >= 0 && index < tempAccords.size()) {
+    tempAccords.remove(index);
+    refreshButtons();
+  }
+}
+
+public void controlEvent(ControlEvent event) {
+  String name = event.getController().getName();
+  
+  if (name.equals("ajoutChords")) {
+    ajoutChords();
+  } 
+  else if (name.equals("validerAccord")) {
+    validerAccord();
+  }
+  else if (name.equals("setAccords")) {
+    setAccords();
+  }
+  else if (name.startsWith("del_")) {
+    int index = Integer.parseInt(name.substring(4));
+    supprimerAccord(index);
+  }
 }

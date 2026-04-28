@@ -5,6 +5,7 @@ import java.io.File;
 public class KarplusStrong {
     
     private static final int SAMPLE_RATE = 44100;
+    private static final double DAMPING = 0.499; // 0.5 = original, < 0.5 = plus d'atténuation
     
     public static double[] generateChord(int[] chordSpec, double durationSeconds) {
         int root = chordSpec[0];
@@ -78,7 +79,7 @@ public class KarplusStrong {
                     prevPrev = (j - 1) * N + i - 1;
                 }
                 
-                t[current] = (t[prev] + t[prevPrev]) / 2.;
+                t[current] = DAMPING * (t[prev] + t[prevPrev]);
             }
         }
         
@@ -109,7 +110,7 @@ public class KarplusStrong {
     public static void main(String[] args) {
         try {
             int[] chordSpec = {64, 0, 3, 7}; // Racine + intervalles en demi-tons (E + unison, tierce majeure, quinte)
-            double durationSeconds = 3.0;
+            double durationSeconds = 5.;
 
             System.out.println("Génération de l'accord...");
             double[] samples = generateChord(chordSpec, durationSeconds);
