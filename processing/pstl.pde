@@ -1,3 +1,4 @@
+
 import org.sample.mavensample.App;
 import processing.sound.SoundFile;
 import processing.sound.*;
@@ -5,6 +6,7 @@ import controlP5.*;
 
 ControlP5 c;
 Textfield inputField;
+Textfield timelimitField;
 Button addButton;
 float yStart = 100;
 float lineHeight = 35; 
@@ -14,7 +16,7 @@ ArrayList<Button> deleteButtons = new ArrayList<Button>();
 
 boolean editMode = false;
 boolean pendingPagePrincipal = false;
-
+int timelimit = -1;
 
 int NB_CORDES = 6;
 int NB_FRETTES = 6;
@@ -74,9 +76,11 @@ void draw() {
   if (pendingPagePrincipal) {
     pendingPagePrincipal = false;
     background(255);
-    c.remove("setAccords");
-    c.remove("validerAccord");
-    if (inputField != null) c.remove(inputField.getName());
+    if (c.getController("setAccords") != null)  c.remove("setAccords");
+    if (c.getController("validerAccord") != null)  c.remove("validerAccord");
+    if (c.getController("ajoutChords") != null)  c.getController("ajoutChords").remove();
+    if (c.getController("timelimitInput") != null)  c.getController("timelimitInput").remove();
+    if (c.getController("accordInput") != null)  c.getController("accordInput").remove();
     for (Button b : deleteButtons) c.remove(b.getName());
     deleteButtons.clear();
     page_principal();
@@ -100,6 +104,8 @@ void draw() {
      text(str, 2*width/30, y + lineHeight/2);
      y += lineHeight;
    }
+   text("Limite de temps (optionnel):", width/30, 35*height/40);
+   text("ms", 5*width/8, 9*height/10);
   }
 }
  
@@ -126,7 +132,10 @@ void page_principal() {
     Thread t1 = new Thread(null, new Runnable() {
       public void run() {
         // mesAccords = App.getInfos(partition_chords, false);
-        mesAccords = App.getInfosWithTimeLimit(partition_chords, false, 1000);
+        println(timelimit);
+        if (timelimit != -1) { mesAccords = App.getInfosWithTimeLimit(partition_chords, false, timelimit);} 
+        else {mesAccords = App.getInfos(partition_chords, false);}
+        
         println("Calcul terminé !");
       }
     }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
@@ -345,6 +354,7 @@ void mousePressed() {
 }
 
 void changerAccordSuivant() {
+  if (mesAccords == null || mesAccords.length == 0) return;
   indexAccord = (indexAccord + 1) % mesAccords.length;
   lastChange = millis();
   redessinerTout();
@@ -352,6 +362,7 @@ void changerAccordSuivant() {
 }
 
 void redessinerTout() {
+  if (mesAccords == null || mesAccords.length == 0 || indexAccord >= mesAccords.length) return;
   background(255);
   dessinerTabAccord(mesAccords[indexAccord], width * offsetX, height * offsetY);
   fill(0);
@@ -363,7 +374,11 @@ void redessinerTout() {
 
 void ajoutChords() {
  editMode = true;
- c.getController("ajoutChords").remove();
+ if (c.getController("ajoutChords") != null) c.getController("ajoutChords").remove();
+ if (c.getController("setAccords") != null) c.getController("setAccords").remove();
+ if (c.getController("timelimitInput") != null) c.getController("timelimitInput").remove();
+ if (c.getController("accordInput") != null) c.getController("accordInput").remove();
+ if (c.getController("validerAccord") != null) c.getController("validerAccord").remove();
  background(255);
  inputField = c.addTextfield("accordInput")
                .setPosition(2*width/30, height/10)
@@ -372,7 +387,8 @@ void ajoutChords() {
                .setLabelVisible(false)
                .setCaptionLabel("")
                .setColor(color(0, 0, 0))
-               .setColorCursor(color(0, 0, 0));
+               .setColorCursor(color(0, 0, 0))
+               .setFont(createFont("Arial", 14));
  
  addButton = c.addButton("validerAccord")
               .setPosition(3*width/4, height/10)
@@ -385,11 +401,31 @@ void ajoutChords() {
   .setColorBackground(color(0,250,0))
   .setColorForeground(color(0,220,0))
   .setLabel("OK");
+  
+  timelimitField = c.addTextfield("timelimitInput")
+                    .setPosition(width/30, 9*height/10)
+                    .setSize(width/4, height/10)
+                    .setColorBackground(color(250, 250, 250))
+                    .setLabelVisible(false)
+                    .setCaptionLabel("")
+                    .setColor(color(0,0,0))
+                    .setColorCursor(color(0,0,0))
+                    .setFont(createFont("Arial", 14));
+  
+  refreshButtons();
 }
 
 void setAccords() {
  indexAccord = 0; 
  editMode = false;
+ String input = timelimitField.getText().trim();
+ try {
+   timelimit = Integer.parseInt(input);
+   if (timelimit < 1) timelimit = -1;
+ } catch (NumberFormatException e) {
+   println("Format invalide : " + input);
+   timelimit = -1;
+ }
  pendingPagePrincipal = true;
 }
 
