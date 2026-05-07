@@ -116,6 +116,63 @@ public class App
 	}
 
 
+	public static int[][] findAlternativeChords(ClasseGuitare guitare, ClasseGuitariste player, int[][] partition_chords, int[][] previousSolution, int indexToReload, int maxMilli)
+	{
+ 
+		ClassePartition partition = new ClassePartition();
+		partition.chords = partition_chords;
+ 
+		// 1. Modèle
+		Model model = new Model("ChordAlternative");
+ 
+		Map<int[], Tuples> positions_legales = new HashMap<>();
+		Map<int[], ClasseCritere> criteresStock = new HashMap<>();
+		for (int i = 0; i < partition.chords.length; i++) {
+			positions_legales.put(partition.chords[i], new Tuples(true));
+		}
+		ClasseOutilsMusique.creerTuple(guitare, player, partition, model, positions_legales, criteresStock);
+ 
+		IntVar[][] doigtes = ClasseOutilsMusique.ajoutContraintes(guitare, player, partition, model, positions_legales);
+ 
+		// 2. Fixer tous les accords sauf indexToReload
+		for (int j = 0; j < partition_chords.length; j++) {
+			if (j != indexToReload) {
+				for (int k = 0; k < guitare.nc; k++) {
+					model.arithm(doigtes[j][k], "=", previousSolution[j][k]).post();
+				}
+			}
+		}
+ 
+		// 3. Interdire la solution précédente pour l'accord à recharger
+		int[] prevChord = previousSolution[indexToReload];
+		Tuples solutionInterdite = new Tuples(false); // false = contrainte de non-égalité
+		solutionInterdite.add(prevChord);
+		model.table(doigtes[indexToReload], solutionInterdite).post();
+ 
+		// 4. Résolution
+		Solver solver = model.getSolver();
+		solver.setSearch(Search.inputOrderLBSearch(ArrayUtils.flatten(doigtes)));
+		if (maxMilli > 0) { solver.limitTime(maxMilli); }
+ 
+		IntVar toMinimize = ClasseOutilsMusique.fonctionToMinimize(model, doigtes, guitare, partition, player, criteresStock);
+		Solution solution = solver.findOptimalSolution(toMinimize, Model.MINIMIZE);
+ 
+		if (solution == null) {
+			throw new RuntimeException("Aucune solution alternative trouvée pour l'accord " + indexToReload);
+		}
+ 
+		// 5. Extraction résultat
+		int[][] result = new int[partition_chords.length][guitare.nc];
+		for (int j = 0; j < partition_chords.length; j++) {
+			for (int k = 0; k < guitare.nc; k++) {
+				result[j][k] = solution.getIntVal(doigtes[j][k]);
+			}
+		}
+ 
+		System.out.println("Alternative trouvée pour l'accord " + indexToReload);
+		return result;
+	}
+
 	/**
 	 * Fonction main du programme,
 	 * Dans laquelle on définit les préférences de l'instrumentiste, 
@@ -132,17 +189,6 @@ public class App
 			{64, 0, 3, 7}
 		};
 
-		// 4. Resolution 
-		App.getInfos(partition, true);
-	}
-
-	public static int[][] getInfos (int[][] partition_chords, boolean print) {
-		return App.getInfosWithTimeLimit(partition_chords, print, -1);
-	}
-
-	
-	public static int[][] getInfosWithTimeLimit (int[][] partition_chords, boolean print, int maxMilli) {
-		// 1. Model of the guitar
 		ClasseGuitare guitare = new ClasseGuitare();
 		// Pour une guitare classique
 		guitare.nf = 13;
@@ -182,22 +228,19 @@ public class App
 		player.preferences.pasRepetitionMax = 7;
 
 
-		// 3. Modele de la suite d'accords
-		ClassePartition partition = new ClassePartition();
-		// Les Feuilles Mortes Y.M J.P J.K
-		// partition.chords = new int[][]{
-		// 		{57, 0, 3, 7, 10},
-		// 		{62, 0, 4, 7, 10},
-		// 		{67, 0, 4, 7},
-		// 		{57, 0, 3, 7, 10},
-		// 		{59, 0, 4, 7, 10},
-		// 		{64, 0, 3, 7},
-		// };
-		partition.chords = partition_chords;
+		// 4. Resolution 
+		App.getInfos(guitare, player, partition, true);
+	}
 
-		// 4. Resolution
-		int[][] res = findChords(guitare, player, partition, print, (maxMilli>0?maxMilli:-1));
-		return res;
+	public static int[][] getInfos (ClasseGuitare guitare, ClasseGuitariste player, int[][] partition_chords, boolean print) {
+		return App.getInfosWithTimeLimit(guitare, player, partition_chords, print, -1);
+	}
+
+	
+	public static int[][] getInfosWithTimeLimit(ClasseGuitare guitare, ClasseGuitariste player, int[][] partition_chords, boolean print, int maxMilli) {
+		ClassePartition partition = new ClassePartition();
+		partition.chords = partition_chords;
+		return findChords(guitare, player, partition, print, maxMilli);
 	}
 
 }

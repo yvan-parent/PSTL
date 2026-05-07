@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.1" name="org.sample.mavensample.AppTest" time="0.077" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.1" name="org.sample.mavensample.AppTest" time="0.068" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -11,7 +11,7 @@
     <property name="java.vm.specification.version" value="21"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-21-openjdk-amd64/lib"/>
-    <property name="sun.java.command" value="/home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire/surefirebooter-20260323171918956_3.jar /home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire 2026-03-23T17-19-18_612-jvmRun1 surefire-20260323171918956_1tmp surefire_0-20260323171918956_2tmp"/>
+    <property name="sun.java.command" value="/home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire/surefirebooter-20260507122315117_3.jar /home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire 2026-05-07T12-23-14_857-jvmRun1 surefire-20260507122315117_1tmp surefire_0-20260507122315117_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/home/laura/M1/PSTL/src/secondModel/mavensample/target/test-classes:/home/laura/M1/PSTL/src/secondModel/mavensample/target/classes:/home/laura/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/home/laura/.m2/repository/org/choco-solver/choco-solver/5.0.0-beta.1/choco-solver-5.0.0-beta.1.jar:/home/laura/.m2/repository/dk/brics/automaton/automaton/1.11-8/automaton-1.11-8.jar:/home/laura/.m2/repository/org/jgrapht/jgrapht-core/1.4.0/jgrapht-core-1.4.0.jar:/home/laura/.m2/repository/org/jheaps/jheaps/0.11/jheaps-0.11.jar:/home/laura/.m2/repository/org/ehcache/sizeof/0.4.3/sizeof-0.4.3.jar:/home/laura/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar:/home/laura/.m2/repository/net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -26,7 +26,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="/home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire/surefirebooter-20260323171918956_3.jar"/>
+    <property name="surefire.real.class.path" value="/home/laura/M1/PSTL/src/secondModel/mavensample/target/surefire/surefirebooter-20260507122315117_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="21.0.10+7-Ubuntu-124.04"/>
     <property name="user.name" value="laura"/>
@@ -52,5 +52,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="testApp" classname="org.sample.mavensample.AppTest" time="0.013"/>
+  <testcase name="testApp" classname="org.sample.mavensample.AppTest" time="0.008"/>
 </testsuite>
