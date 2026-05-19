@@ -4,6 +4,7 @@ import processing.sound.*;
 import controlP5.*;
 
 ControlP5 c;
+String erreur;
 
 // Page pour entrer les parametres
 
@@ -150,7 +151,7 @@ void draw() {
     page_principal();
     return;
   }
-  if (defilement_auto && mesAccords != null && !editMode) {
+  if (defilement_auto && mesAccords != null && !editMode && erreur == null) {
     if (millis() - lastChange > step) {
       changerAccordSuivant();
     }
@@ -210,10 +211,10 @@ void draw() {
   }
 
 
-
 }
  
 void page_principal() {
+  erreur = null;
   c.addButton("ajoutChords")
   .setPosition(9 * width / 10, 0)
   .setSize(width / 10, height / 15)
@@ -236,10 +237,14 @@ void page_principal() {
   } else {
     Thread t1 = new Thread(null, new Runnable() {
       public void run() {
+        try {
         if (timelimit != -1) { mesAccords = App.getInfosWithTimeLimit(guitare, player, partition_chords, false, timelimit);} 
         else {mesAccords = App.getInfos(guitare, player, partition_chords, false);}
-        
         println("Calcul terminé !");
+        } catch (RuntimeException e) {
+          erreur = e.getMessage();
+          mesAccords = null;
+        }
       }
     }, "calcul-thread", 64 * 1024 * 1024); // 64 Mo de stack
     samples = new double[partition_chords.length][];
@@ -274,6 +279,17 @@ void page_principal() {
       println("Thread interrompu ! : "+ e);
     }
     buttonOff = false;
+    
+    if (erreur != null) {
+      erreur = null;
+      background(255);
+      fill(0);
+      textSize(height * txtProp);
+      textAlign(CENTER, CENTER);
+      text("Aucune solution trouvée", width/2, height/2);
+      textAlign(LEFT);
+      return;
+      }
     sons = new SoundFile[partition_chords.length];
     for (int i = 0; i < partition_chords.length; i++) {
       String filePath = sketchPath("assets/karplus_strong_chord" + i + ".wav");
@@ -311,6 +327,7 @@ void jouerSonAccord(int index) {
 }
 
 void dessinerTabAccord(int[] cordes, float x, float y) {
+  if (cordes == null || cordes.length == 0) return;
   pushStyle();
   
   float cordesWidth = (NB_CORDES - 1) * MARGE;
@@ -375,6 +392,7 @@ void dessinerTabAccord(int[] cordes, float x, float y) {
 }
 
 void dessinerBoutons() {
+  if (mesAccords == null || mesAccords.length == 0) return;
   pushStyle();
   
   float boutonLargeur = width * boutonLargeurRatio;
@@ -524,7 +542,7 @@ void rechargerAccordCourant() {
 }
 
 void changerAccordSuivant() {
-  if (mesAccords == null || mesAccords.length == 0) return;
+  if (mesAccords == null || mesAccords.length == 0 || erreur != null) return;
   indexAccord = (indexAccord + 1) % mesAccords.length;
   lastChange = millis();
   redessinerTout();
